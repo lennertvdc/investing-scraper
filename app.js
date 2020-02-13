@@ -11,7 +11,6 @@ axios.get(url)
     investment.updatedAt = getInvestmentUpdateDate($);
 
     isNewInvestmentUpdate(investment.updatedAt).then(isNew => {
-      console.log(isNew);
       if (isNew) {
         investment.name = getInvestmentName($);
         investment.price = getInvestmentPrice($);
@@ -53,6 +52,11 @@ async function isNewInvestmentUpdate(scrapedDate) {
 }
 
 function sendInvestmentToServer(investment) {
-  console.log('Sending investment to server...');
-  console.log(investment);
+  axios.post('http://localhost:5000/api/investments', investment)
+  .then(() => {
+    console.log('Posted a new update of the investment');
+  })
+  .catch(error => {
+    console.log(error);
+  });
 }
