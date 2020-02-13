@@ -11,6 +11,7 @@ axios.get(url)
     investment.updatedAt = getInvestmentUpdateDate($);
 
     isNewInvestmentUpdate(investment.updatedAt).then(isNew => {
+      console.log(isNew);
       if (isNew) {
         investment.name = getInvestmentName($);
         investment.price = getInvestmentPrice($);
@@ -18,7 +19,7 @@ axios.get(url)
         sendInvestmentToServer(investment);
       }
     });
-    
+
   }).catch(error => {
     console.log(error);
   });
@@ -40,14 +41,15 @@ function getInvestmentPrice($) {
 function getInvestmentUpdateDate($) {
   let scrapedDate = $('header.clearfix.header-stats label').first().text();
   let dateArr = scrapedDate.match(/(\d{1,4}([.\-/])\d{1,2}([.\-/])\d{1,4})/g)[0].split('/');
+  let dateString = dateArr.reverse().join('-');
 
-  return dateArr.reverse().join('-');
+  return new Date(dateString);
 }
 
 async function isNewInvestmentUpdate(scrapedDate) {
   const response = await axios.get('http://localhost:5000/api/investments/latest');
 
-  return response.data.updatedAt === scrapedDate ? false : true;
+  return new Date(response.data.updatedAt).getTime() === scrapedDate.getTime() ? false : true;
 }
 
 function sendInvestmentToServer(investment) {
