@@ -8,9 +8,10 @@ axios.get(url)
     const html = response.data;
     const $ = cheerio.load(html);
     let investment = {};
-    investment.updateDate = getInvestmentUpdateDate($);
+    investment.updatedAt = getInvestmentUpdateDate($);
 
-    if (differenceBetweenTwoDates(investment.updateDate)) {
+    if (differenceBetweenTwoDates(investment.updatedAt)) {
+      investment.updatedAt = investment.updatedAt.toISOString().split('T')[0]
       investment.name = getInvestmentName($);
       investment.price = getInvestmentPrice($);
 
