@@ -10,13 +10,15 @@ axios.get(url)
     let investment = {};
     investment.updatedAt = getInvestmentUpdateDate($);
 
-    if (differenceBetweenTwoDates(investment.updatedAt)) {
-      investment.updatedAt = investment.updatedAt.toISOString().split('T')[0]
-      investment.name = getInvestmentName($);
-      investment.price = getInvestmentPrice($);
+    isNewInvestmentUpdate(investment.updatedAt).then(isNew => {
+      if (isNew) {
+        investment.name = getInvestmentName($);
+        investment.price = getInvestmentPrice($);
 
-      sendInvestmentToServer(investment);
-    }
+        sendInvestmentToServer(investment);
+      }
+    });
+    
   }).catch(error => {
     console.log(error);
   });
@@ -38,21 +40,14 @@ function getInvestmentPrice($) {
 function getInvestmentUpdateDate($) {
   let scrapedDate = $('header.clearfix.header-stats label').first().text();
   let dateArr = scrapedDate.match(/(\d{1,4}([.\-/])\d{1,2}([.\-/])\d{1,4})/g)[0].split('/');
-  let date = new Date();
 
-  date.setFullYear(parseInt(dateArr[2]));
-  date.setMonth(parseInt(dateArr[1] - 1));
-  date.setDate(parseInt(dateArr[0]));
-
-  return date;
+  return dateArr.reverse().join('-');
 }
 
-function differenceBetweenTwoDates(date) {
-  let dateToday = new Date();
-  let diffTime = Math.abs(dateToday - date);
-  let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+async function isNewInvestmentUpdate(scrapedDate) {
+  const response = await axios.get('http://localhost:5000/api/investments/latest');
 
-  return diffDays !== 0 ? true : false;
+  return response.data.updatedAt === scrapedDate ? false : true;
 }
 
 function sendInvestmentToServer(investment) {
