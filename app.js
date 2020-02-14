@@ -1,27 +1,29 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
 
-const url = 'https://www.tijd.be/customers/mediafin.be/funds_tijd/1423098/Fund/60125183?t='
+init();
 
-axios.get(url)
-  .then(response => {
-    const html = response.data;
+async function init() {
+  try {
+    const url = 'https://www.tijd.be/customers/mediafin.be/funds_tijd/1423098/Fund/60125183?t='
+    const htmlResponse = await axios.get(url);
+    const html = htmlResponse.data;
     const $ = cheerio.load(html);
     let investment = {};
     investment.updatedAt = getInvestmentUpdateDate($);
 
-    isNewInvestmentUpdate(investment.updatedAt).then(isNew => {
-      if (isNew) {
-        investment.name = getInvestmentName($);
-        investment.price = getInvestmentPrice($);
+    if (await isNewInvestmentUpdate(investment.updatedAt)) {
+      investment.name = getInvestmentName($);
+      investment.price = getInvestmentPrice($);
 
-        sendInvestmentToServer(investment);
-      }
-    });
+      sendInvestmentToServer(investment);
+    }
 
-  }).catch(error => {
-    console.log(error);
-  });
+    console.log(investment);
+  } catch (error) {
+    console.log("error", error);
+  }
+}
 
 function getInvestmentName($) {
   let scrapedName = $('h1.header-small').text();
@@ -53,10 +55,10 @@ async function isNewInvestmentUpdate(scrapedDate) {
 
 function sendInvestmentToServer(investment) {
   axios.post('http://localhost:5000/api/investments', investment)
-  .then(() => {
-    console.log('Posted a new update of the investment');
-  })
-  .catch(error => {
-    console.log(error);
-  });
+    .then(() => {
+      console.log('Posted a new update of the investment');
+    })
+    .catch(error => {
+      console.log(error);
+    });
 }
