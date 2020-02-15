@@ -18,8 +18,6 @@ async function init() {
 
       sendInvestmentToServer(investment);
     }
-
-    console.log(investment);
   } catch (error) {
     console.log("error", error);
   }
@@ -53,12 +51,11 @@ async function isNewInvestmentUpdate(scrapedDate) {
   return new Date(response.data.updatedAt).getTime() === scrapedDate.getTime() ? false : true;
 }
 
-function sendInvestmentToServer(investment) {
-  axios.post('http://localhost:5000/api/investments', investment)
-    .then(() => {
-      console.log('Posted a new update of the investment');
-    })
-    .catch(error => {
-      console.log(error);
-    });
+async function sendInvestmentToServer(investment) {
+  try {
+    await axios.post('http://localhost:5000/api/investments', investment);
+    console.log('Posted a new update of the investment');
+  } catch (error) {
+    console.log(error);
+  }
 }
